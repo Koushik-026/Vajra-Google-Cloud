@@ -2,6 +2,18 @@
 
 import { useState, useEffect } from "react";
 
+const CATEGORY_ICONS = {
+  roads: "🛣️",
+  water_supply: "🚰",
+  sanitation: "🧹",
+  streetlights: "💡",
+  drainage: "🌊",
+  health_facility: "🏥",
+  public_transport: "🚌",
+  solid_waste: "🗑️",
+  other: "⚠️",
+};
+
 export default function ReportsList({ refreshKey }) {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -28,60 +40,137 @@ export default function ReportsList({ refreshKey }) {
     fetchReports();
   }, [refreshKey]);
 
-  if (loading) return <p>Loading reports...</p>;
-  if (error) return <p className="error-banner">Error: {error}</p>;
-  if (reports.length === 0) return <p>No reports yet. Submit the first one above!</p>;
+  if (loading) {
+    return (
+      <div style={{ padding: "2.5rem 1rem", textAlign: "center", color: "#6b7280" }}>
+        Loading public ledger reports...
+      </div>
+    );
+  }
 
-  const statusEmoji = {
-    received: "📩",
-    verified: "✅",
-    funded: "💰",
-    queued: "⏳",
-  };
+  if (error) {
+    return (
+      <div style={{ padding: "1rem", color: "#ef4444", fontSize: "0.88rem" }}>
+        Error loading ledger: {error}
+      </div>
+    );
+  }
+
+  if (reports.length === 0) {
+    return (
+      <div style={{ padding: "3rem 1.5rem", textAlign: "center", color: "#9ca3af" }}>
+        <p style={{ fontSize: "0.9rem" }}>No citizen reports recorded yet. Submit the first report above.</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="reports-list">
-      <h2>Recent Reports ({reports.length})</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Category</th>
-            <th>Description</th>
-            <th>Status</th>
-            <th>Location</th>
-            <th>Photo Check</th>
-            <th>Submitted</th>
-          </tr>
-        </thead>
-        <tbody>
-          {reports.map((r) => (
-            <tr key={r.id}>
-              <td title={r.id}>
-                <code>{r.id.substring(0, 8)}…</code>
-              </td>
-              <td>{r.category}</td>
-              <td className="desc-cell" title={r.text}>
-                {r.text.length > 60 ? r.text.substring(0, 60) + "…" : r.text}
-              </td>
-              <td>
-                {statusEmoji[r.status] || "❓"} {r.status}
-              </td>
-              <td>
-                {r.lat?.toFixed(3)}, {r.lng?.toFixed(3)}
-              </td>
-              <td>
-                {r.photo_verification?.checked
-                  ? `${r.photo_verification.matches_category} (${(
-                      r.photo_verification.confidence * 100
-                    ).toFixed(0)}%)`
-                  : "—"}
-              </td>
-              <td>{new Date(r.created_at).toLocaleString()}</td>
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+        <div>
+          <h3 style={{ fontSize: "1.1rem", fontWeight: 600 }}>
+            Recent Activity ({reports.length})
+          </h3>
+          <p style={{ fontSize: "0.8rem", color: "#6b7280" }}>
+            Real-time feed of citizen complaints processed by Gemini AI
+          </p>
+        </div>
+        <button
+          onClick={fetchReports}
+          className="btn-stitch-secondary"
+          style={{ padding: "0.35rem 0.75rem", fontSize: "0.78rem" }}
+        >
+          Refresh Feed
+        </button>
+      </div>
+
+      <div style={{ overflowX: "auto", border: "1px solid #e7e7e4", borderRadius: "12px" }}>
+        <table className="stitch-table">
+          <thead>
+            <tr>
+              <th>Tracking ID</th>
+              <th>Sector</th>
+              <th>Description</th>
+              <th>Status</th>
+              <th>Vision</th>
+              <th>Ledger</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {reports.map((r) => {
+              const isFunded = r.status === "funded";
+              const isQueued = r.status === "queued";
+              const statusClass = isFunded
+                ? "badge-funded-stitch"
+                : isQueued
+                ? "badge-queued-stitch"
+                : "badge-received-stitch";
+
+              const icon = CATEGORY_ICONS[r.category] || "📍";
+
+              return (
+                <tr key={r.id}>
+                  <td>
+                    <code
+                      style={{
+                        background: "#f3f4f6",
+                        padding: "2px 6px",
+                        borderRadius: "4px",
+                        fontSize: "0.8rem",
+                        fontFamily: "var(--font-mono)",
+                        color: "#1f2937",
+                      }}
+                    >
+                      {r.id.substring(0, 8)}…
+                    </code>
+                  </td>
+                  <td>
+                    <span style={{ whiteSpace: "nowrap", fontWeight: 500 }}>
+                      {icon} {r.category?.replace(/_/g, " ")}
+                    </span>
+                  </td>
+                  <td title={r.text} style={{ maxWidth: "240px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "#4b5563" }}>
+                    {r.text}
+                  </td>
+                  <td>
+                    <span className={`badge-status ${statusClass}`}>
+                      {r.status || "received"}
+                    </span>
+                  </td>
+                  <td>
+                    {r.photo_verification?.checked ? (
+                      <span
+                        style={{
+                          fontSize: "0.75rem",
+                          fontWeight: 600,
+                          color: r.photo_verification.matches_category === "yes" ? "#059669" : "#dc2626",
+                        }}
+                      >
+                        {r.photo_verification.matches_category === "yes" ? "✓ Verified" : "✗ Flagged"}
+                      </span>
+                    ) : (
+                      <span style={{ color: "#9ca3af", fontSize: "0.75rem" }}>—</span>
+                    )}
+                  </td>
+                  <td>
+                    <a
+                      href={`/status?id=${r.id}`}
+                      style={{
+                        color: "#000000",
+                        fontSize: "0.82rem",
+                        fontWeight: 600,
+                        textDecoration: "underline",
+                      }}
+                    >
+                      View →
+                    </a>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

@@ -21,7 +21,7 @@ async function verifyPhotoWithGemini(photoBase64, mimeType, reportCategory) {
   if (!apiKey) return null;
 
   const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+  const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash" });
 
   const result = await model.generateContent([
     {
@@ -106,6 +106,18 @@ export async function POST(request) {
     };
 
     const docRef = await adminDb.collection("reports").add(reportData);
+
+    // Fire-and-forget: trigger AI processing (embedding, clustering, prioritization)
+    // This runs asynchronously so the citizen doesn't wait for it
+    const baseUrl = request.headers.get("x-forwarded-proto")
+      ? `${request.headers.get("x-forwarded-proto")}://${request.headers.get("host")}`
+      : `http://${request.headers.get("host") || "localhost:3000"}`;
+
+    fetch(`${baseUrl}/api/process`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ report_id: docRef.id }),
+    }).catch((err) => console.error("Background processing error:", err));
 
     return NextResponse.json(
       { id: docRef.id, status: "received", message: "Report submitted successfully" },

@@ -1,158 +1,678 @@
-/* Step 1: Minimal functional styles — full styling comes in Step 5 */
+/* =========================================================
+   VAJRA — Visual Scaffolding Design System
+   Inspired by Google Stitch (Auralis High-Precision Aesthetic)
+   ========================================================= */
+
+:root {
+  --surface: #ffffff;
+  --surface-low: #f9f9f9;
+  --surface-panel: #f7f7f7;
+  --surface-high: #f1edec;
+  --surface-dark: #0f172a;
+  
+  --border-subtle: #e7e7e4;
+  --border-medium: #d4d4d0;
+  --border-dark: #1e293b;
+  
+  --text-primary: #111111;
+  --text-secondary: #5e5e5e;
+  --text-muted: #888888;
+  --text-inverse: #f8fafc;
+  
+  --color-primary: #000000;
+  --color-primary-hover: #262626;
+  
+  --accent-blue: #2563eb;
+  --accent-indigo: #4f46e5;
+  --status-funded: #059669;
+  --status-funded-bg: #ecfdf5;
+  --status-funded-border: #a7f3d0;
+  
+  --status-queued: #d97706;
+  --status-queued-bg: #fffbeb;
+  --status-queued-border: #fde68a;
+
+  --status-received: #4f46e5;
+  --status-received-bg: #eef2ff;
+  --status-received-border: #c7d2fe;
+
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 24px;
+  --radius-panel: 28px;
+  --radius-full: 9999px;
+
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+html, body {
+  background-color: var(--surface);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 15px;
   line-height: 1.6;
-  color: #1a1a2e;
-  background: #f5f5f5;
-  padding: 16px;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-h1 {
-  font-size: 1.8rem;
-  margin-bottom: 8px;
-}
-
-h2 {
-  font-size: 1.3rem;
-  margin-bottom: 12px;
-}
-
-hr {
-  border: none;
-  border-top: 1px solid #ddd;
-  margin: 24px 0;
-}
-
-/* Form */
-.report-form-container {
-  margin-bottom: 16px;
-}
-
-label {
-  display: block;
+h1, h2, h3, h4, h5 {
+  font-family: var(--font-sans);
+  letter-spacing: -0.025em;
   font-weight: 600;
-  margin-top: 12px;
-  margin-bottom: 4px;
+  color: var(--text-primary);
 }
 
-select,
-textarea,
-input[type="number"],
-input[type="text"] {
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* =========================================================
+   STITCH TOP NAVBAR
+   ========================================================= */
+
+.stitch-navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border-subtle);
+  transition: all 0.2s ease;
+}
+
+.navbar-inner {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 2.5rem;
+}
+
+.brand-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.brand-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: #000000;
+}
+
+.brand-pill {
+  font-size: 0.68rem;
+  font-weight: 700;
+  background: #f1edec;
+  color: #444748;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-full);
+  letter-spacing: 0.05em;
+  border: 1px solid var(--border-subtle);
+}
+
+.nav-menu {
+  display: flex;
+  align-items: center;
+  gap: 1.8rem;
+}
+
+@media (max-width: 860px) {
+  .nav-menu {
+    display: none;
+  }
+}
+
+.nav-item {
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: color 0.15s ease;
+}
+
+.nav-item:hover {
+  color: var(--text-primary);
+}
+
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.btn-stitch-primary {
+  background: var(--color-primary);
+  color: #ffffff;
+  padding: 0.55rem 1.25rem;
+  border-radius: var(--radius-full);
+  font-size: 0.88rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+
+.btn-stitch-primary:hover {
+  background: var(--color-primary-hover);
+  transform: translateY(-1px);
+}
+
+.btn-stitch-secondary {
+  background: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--border-medium);
+  padding: 0.55rem 1.25rem;
+  border-radius: var(--radius-full);
+  font-size: 0.88rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+}
+
+.btn-stitch-secondary:hover {
+  background: var(--surface-panel);
+  border-color: #a1a1aa;
+}
+
+/* =========================================================
+   ASYMMETRICAL EDITORIAL HERO (STITCH SPEC)
+   ========================================================= */
+
+.hero-editorial-section {
+  max-width: 1320px;
+  margin: 110px auto 60px;
+  padding: 0 2rem;
+}
+
+.hero-editorial-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 3.5rem;
+  align-items: flex-start;
+}
+
+@media (max-width: 960px) {
+  .hero-editorial-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+.hero-left-spine {
+  display: flex;
+  flex-direction: column;
+}
+
+.hero-headline {
+  font-size: clamp(2.5rem, 5vw, 4.25rem);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+  color: #000000;
+  margin-bottom: 1.5rem;
+}
+
+.hero-actions-strip {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.hero-right-float {
+  padding-top: 0.5rem;
+}
+
+.hero-lead-text {
+  font-size: 1.1rem;
+  line-height: 1.65;
+  color: var(--text-secondary);
+  margin-bottom: 1.8rem;
+}
+
+.hero-meta-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.meta-pill {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.3rem 0.75rem;
+  background: #f1edec;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  color: #444748;
+}
+
+/* =========================================================
+   SCENIC FOG-GRADIENT HERO SHOWCASE PANEL (STITCH SPEC)
+   ========================================================= */
+
+.showcase-container {
+  max-width: 1320px;
+  margin: 0 auto 80px;
+  padding: 0 2rem;
+}
+
+.fog-panel {
+  background: var(--surface-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-panel);
+  padding: 2.2rem;
+  position: relative;
+  overflow: hidden;
+  background-image: 
+    radial-gradient(circle at top left, rgba(219, 234, 254, 0.5) 0%, transparent 45%),
+    radial-gradient(circle at bottom right, rgba(254, 226, 226, 0.4) 0%, transparent 45%),
+    radial-gradient(circle at center, rgba(236, 253, 245, 0.4) 0%, transparent 55%);
+}
+
+.showcase-tab-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.segmented-control {
+  background: rgba(255, 255, 255, 0.9);
+  padding: 4px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-subtle);
+  display: inline-flex;
+  gap: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.segment-btn {
+  padding: 0.5rem 1.1rem;
+  border-radius: var(--radius-full);
+  border: none;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.segment-btn.active {
+  background: #000000;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* =========================================================
+   CARDS & STRUCTURAL SCAFFOLDING
+   ========================================================= */
+
+.scaffold-card {
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s ease;
+}
+
+.scaffold-card:hover {
+  border-color: var(--border-medium);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+}
+
+.card-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.card-title-stitch {
+  font-size: 1.3rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.card-desc-stitch {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-top: 0.2rem;
+}
+
+/* =========================================================
+   MINIMALIST FORM STYLES
+   ========================================================= */
+
+.form-group-stitch {
+  margin-bottom: 1.5rem;
+}
+
+.form-label-stitch {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #444748;
+  margin-bottom: 0.5rem;
+}
+
+.form-input-stitch, .form-textarea-stitch {
   width: 100%;
-  padding: 8px 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  padding: 0.85rem 1rem;
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+}
+
+.form-input-stitch:focus, .form-textarea-stitch:focus {
+  outline: none;
+  border-color: #000000;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+}
+
+.category-chips-stitch {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 0.5rem;
+}
+
+.chip-stitch {
+  padding: 0.65rem 0.85rem;
+  background: var(--surface-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.chip-stitch:hover {
+  background: #ebe7e6;
+  color: var(--text-primary);
+}
+
+.chip-stitch.active {
+  background: #000000;
+  color: #ffffff;
+  border-color: #000000;
+}
+
+/* =========================================================
+   TRUST & ARCHITECTURE STRIP
+   ========================================================= */
+
+.trust-section {
+  max-width: 1320px;
+  margin: 0 auto 90px;
+  padding: 3rem 2rem;
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+  text-align: center;
+}
+
+.trust-lead {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  margin-bottom: 1.8rem;
+}
+
+.trust-badges-grid {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 3rem;
+  flex-wrap: wrap;
+}
+
+.trust-badge-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-secondary);
+  font-weight: 600;
   font-size: 0.95rem;
 }
 
-textarea {
-  resize: vertical;
+/* =========================================================
+   DARK CODE / ARCHITECTURE CONSOLE (FROM STITCH)
+   ========================================================= */
+
+.dark-console-box {
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 20px;
+  padding: 1.8rem;
+  color: #e2e8f0;
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+  line-height: 1.7;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
 }
 
-.location-row {
+.console-header-dots {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 6px;
+  gap: 6px;
+  margin-bottom: 1.2rem;
 }
 
-.location-display {
-  font-size: 0.9rem;
-  color: #555;
+.dot-red { width: 10px; height: 10px; border-radius: 50%; background: #ef4444; }
+.dot-yellow { width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; }
+.dot-green { width: 10px; height: 10px; border-radius: 50%; background: #10b981; }
+
+.console-code {
+  color: #38bdf8;
 }
 
-.manual-coords {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 8px;
+.console-comment {
+  color: #64748b;
 }
 
-.manual-coords input {
-  width: 50%;
+/* =========================================================
+   MAP & STATUS BADGES
+   ========================================================= */
+
+.map-wrapper-stitch {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+  position: relative;
+  height: 440px;
+  background: #f1edec;
 }
 
-.btn-primary {
-  display: inline-block;
-  margin-top: 16px;
-  padding: 10px 24px;
-  background: #2563eb;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 1rem;
-  cursor: pointer;
+.badge-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
-.btn-primary:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+.badge-funded-stitch {
+  background: var(--status-funded-bg);
+  color: var(--status-funded);
+  border: 1px solid var(--status-funded-border);
 }
 
-.btn-secondary {
-  padding: 6px 14px;
-  background: #e5e7eb;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.9rem;
+.badge-queued-stitch {
+  background: var(--status-queued-bg);
+  color: var(--status-queued);
+  border: 1px solid var(--status-queued-border);
 }
 
-.success-banner {
-  background: #d1fae5;
-  border: 1px solid #34d399;
-  padding: 12px;
-  border-radius: 4px;
-  margin-bottom: 12px;
+.badge-received-stitch {
+  background: var(--status-received-bg);
+  color: var(--status-received);
+  border: 1px solid var(--status-received-border);
 }
 
-.error-banner {
-  background: #fee2e2;
-  border: 1px solid #f87171;
-  padding: 12px;
-  border-radius: 4px;
-  margin-bottom: 12px;
-}
+/* =========================================================
+   TABLE DESIGN
+   ========================================================= */
 
-/* Reports table */
-.reports-list {
-  overflow-x: auto;
-}
-
-table {
+.stitch-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.9rem;
-}
-
-th,
-td {
+  font-size: 0.88rem;
   text-align: left;
-  padding: 8px 10px;
-  border-bottom: 1px solid #e5e7eb;
 }
 
-th {
-  background: #f9fafb;
+.stitch-table th {
+  padding: 0.85rem 1rem;
+  background: var(--surface-panel);
+  color: var(--text-secondary);
   font-weight: 600;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--border-subtle);
 }
 
-.desc-cell {
-  max-width: 200px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.stitch-table td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-subtle);
 }
 
-code {
-  background: #f3f4f6;
-  padding: 2px 6px;
-  border-radius: 3px;
-  font-size: 0.85rem;
+.stitch-table tr:hover td {
+  background: #fafafa;
+}
+
+/* =========================================================
+   FOOTER
+   ========================================================= */
+
+.stitch-footer {
+  border-top: 1px solid var(--border-subtle);
+  background: #ffffff;
+  padding: 4rem 2rem 2rem;
+}
+
+.footer-inner {
+  max-width: 1320px;
+  margin: 0 auto;
+}
+
+.footer-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 3rem;
+  margin-bottom: 3.5rem;
+  flex-wrap: wrap;
+}
+
+.footer-brand-col {
+  max-width: 380px;
+}
+
+.footer-lead {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.footer-badge {
+  display: inline-block;
+  margin-top: 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.75rem;
+  background: var(--surface-panel);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+}
+
+.footer-links-grid {
+  display: flex;
+  gap: 4rem;
+  flex-wrap: wrap;
+}
+
+.footer-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.footer-heading {
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.footer-link {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  transition: color 0.15s ease;
+}
+
+.footer-link:hover {
+  color: #000000;
+}
+
+.footer-bottom {
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  flex-wrap: wrap;
+  gap: 1rem;
 }
