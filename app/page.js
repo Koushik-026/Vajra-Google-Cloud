@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useLanguage } from "@/lib/LanguageContext";
 import ReportForm from "./components/ReportForm";
 import ReportsList from "./components/ReportsList";
 import HotspotMap from "./components/HotspotMap";
 
 export default function Home() {
+  const { t } = useLanguage();
   const [refreshKey, setRefreshKey] = useState(0);
   const [hotspots, setHotspots] = useState([]);
   const [stats, setStats] = useState({ totalReports: 0, totalHotspots: 0, fundedCount: 0 });
@@ -43,30 +45,28 @@ export default function Home() {
         <div className="hero-editorial-grid">
           <div className="hero-left-spine">
             <div style={{ marginBottom: "1rem" }}>
-              <span className="brand-pill">DIGITAL PUBLIC INFRASTRUCTURE CONSOLE</span>
+              <span className="brand-pill">{t.heroTag || "DIGITAL PUBLIC INFRASTRUCTURE CONSOLE"}</span>
             </div>
             <h1 className="hero-headline">
-              Citizen Voice to <br />
-              <span style={{ color: "#2563eb" }}>Municipal Action.</span>
+              {t.heroHeadline1 || "Citizen Voice to"} <br />
+              <span style={{ color: "#2563eb" }}>{t.heroHeadline2 || "Municipal Action."}</span>
             </h1>
             <div className="hero-actions-strip">
               <a href="#report-form" className="btn-stitch-primary" style={{ padding: "0.8rem 1.6rem", fontSize: "0.95rem" }}>
-                Report an Issue
+                {t.reportIssueBtn || "Report an Issue"}
               </a>
               <a href="/hotspots" className="btn-stitch-secondary" style={{ padding: "0.8rem 1.6rem", fontSize: "0.95rem" }}>
-                Explore Hotspots Map →
+                {t.exploreHotspotsBtn || "Explore Hotspots Map →"}
               </a>
               <a href="/planner" className="btn-stitch-secondary" style={{ padding: "0.8rem 1.6rem", fontSize: "0.95rem" }}>
-                Municipal Planner →
+                {t.plannerBtn || "Municipal Planner →"}
               </a>
             </div>
           </div>
 
           <div className="hero-right-float">
             <p className="hero-lead-text">
-              Vajra is India&apos;s precision AI infrastructure platform. We turn fragmented citizen complaints into
-              geospatially clustered hotspots, verify photo evidence with Gemini Vision, and rank municipal spending
-              using transparent greedy budget optimization.
+              {t.heroLead || "Vajra is India's precision AI infrastructure platform. We turn fragmented citizen complaints into geospatially clustered hotspots, verify photo evidence with Gemini Vision, and rank municipal spending using transparent greedy budget optimization."}
             </p>
             <div className="hero-meta-badges">
               <span className="meta-pill">Zero GCP Billing</span>

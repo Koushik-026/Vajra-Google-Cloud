@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { useLanguage } from "@/lib/LanguageContext";
 
 const CATEGORIES = [
   { value: "roads", label: "Roads & Potholes", icon: "🛣️" },
@@ -15,6 +16,7 @@ const CATEGORIES = [
 ];
 
 export default function ReportForm({ onReportSubmitted }) {
+  const { t } = useLanguage();
   const [text, setText] = useState("");
   const [category, setCategory] = useState("");
   const [lat, setLat] = useState(null);
@@ -169,7 +171,7 @@ export default function ReportForm({ onReportSubmitted }) {
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "#065f46", fontWeight: 600 }}>
-            <span>✓</span> Report Logged & Dispatched to AI Engine!
+            <span>✓</span> {t.reportSuccess || "Report Logged & Dispatched to AI Engine!"}
           </div>
           <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", margin: "0.75rem 0" }}>
             <code
@@ -200,7 +202,7 @@ export default function ReportForm({ onReportSubmitted }) {
             className="btn-stitch-primary"
             style={{ fontSize: "0.82rem", display: "inline-flex" }}
           >
-            Track Neighborhood Status →
+            {t.trackStatusBtn || "Track Neighborhood Status →"}
           </a>
         </div>
       )}
@@ -224,7 +226,7 @@ export default function ReportForm({ onReportSubmitted }) {
       <form onSubmit={handleSubmit}>
         {/* Category Selection */}
         <div className="form-group-stitch">
-          <label className="form-label-stitch">1. Infrastructure Sector</label>
+          <label className="form-label-stitch">{t.sectorLabel || "1. Infrastructure Sector"}</label>
           <div className="category-chips-stitch">
             {CATEGORIES.map((cat) => (
               <div
@@ -233,7 +235,7 @@ export default function ReportForm({ onReportSubmitted }) {
                 onClick={() => setCategory(cat.value)}
               >
                 <span>{cat.icon}</span>
-                <span>{cat.label}</span>
+                <span>{t[`cat_${cat.value}`] || cat.label}</span>
               </div>
             ))}
           </div>
@@ -242,12 +244,12 @@ export default function ReportForm({ onReportSubmitted }) {
         {/* Problem Description */}
         <div className="form-group-stitch">
           <label className="form-label-stitch" htmlFor="problem-desc-stitch">
-            2. Detailed Description
+            {t.descLabel || "2. Detailed Description"}
           </label>
           <textarea
             id="problem-desc-stitch"
             className="form-textarea-stitch"
-            placeholder="Describe the defect, location landmarks, severity, and impact..."
+            placeholder={t.descPlaceholder || "Describe the defect, location landmarks, severity, and impact..."}
             value={text}
             onChange={(e) => setText(e.target.value)}
             rows={3}
@@ -260,7 +262,7 @@ export default function ReportForm({ onReportSubmitted }) {
 
         {/* Location Picker */}
         <div className="form-group-stitch">
-          <label className="form-label-stitch">3. Geolocation Verification</label>
+          <label className="form-label-stitch">{t.gpsLabel || "3. Geolocation Verification"}</label>
           <div style={{ display: "flex", gap: "0.6rem" }}>
             <button
               type="button"
@@ -269,7 +271,7 @@ export default function ReportForm({ onReportSubmitted }) {
               disabled={locating}
             >
               <span>{locating ? "⏳" : "📍"}</span>
-              <span>{locating ? "Acquiring..." : "Detect GPS"}</span>
+              <span>{locating ? (t.gpsAcquiring || "Acquiring...") : (t.detectGps || "Detect GPS")}</span>
             </button>
             <input
               type="text"
@@ -285,12 +287,12 @@ export default function ReportForm({ onReportSubmitted }) {
         {/* Photo Upload with Gemini Vision Verification */}
         <div className="form-group-stitch">
           <label className="form-label-stitch">
-            4. Photo Proof (Gemini Vision Verification)
+            {t.photoLabel || "4. Photo Proof (Gemini Vision Verification)"}
           </label>
           <div style={{ display: "flex", alignItems: "center", gap: "0.8rem" }}>
             <label className="btn-stitch-secondary" style={{ cursor: "pointer" }}>
               <span>📷</span>
-              <span>{photo ? "Change Photo" : "Upload Evidence"}</span>
+              <span>{photo ? (t.changePhoto || "Change Photo") : (t.uploadPhoto || "Upload Evidence")}</span>
               <input
                 ref={fileRef}
                 type="file"
@@ -317,7 +319,7 @@ export default function ReportForm({ onReportSubmitted }) {
                   onClick={removePhoto}
                   style={{ background: "none", border: "none", color: "#ef4444", cursor: "pointer", fontSize: "0.8rem" }}
                 >
-                  ✕ Remove
+                  ✕ {t.removePhoto || "Remove"}
                 </button>
               </div>
             )}
@@ -330,7 +332,7 @@ export default function ReportForm({ onReportSubmitted }) {
           style={{ width: "100%", justifyContent: "center", padding: "0.85rem 1.5rem", fontSize: "0.95rem" }}
           disabled={submitting}
         >
-          {submitting ? "Analyzing & Vectorizing..." : "Submit to Public Ledger →"}
+          {submitting ? (t.submittingBtn || "Analyzing & Vectorizing...") : (t.submitBtn || "Submit to Public Ledger →")}
         </button>
       </form>
     </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { useLanguage } from "@/lib/LanguageContext";
 import HotspotMap from "../components/HotspotMap";
 
 const CATEGORY_FILTERS = [
@@ -16,6 +17,7 @@ const CATEGORY_FILTERS = [
 ];
 
 export default function HotspotsPage() {
+  const { t } = useLanguage();
   const [hotspots, setHotspots] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -89,7 +91,7 @@ export default function HotspotsPage() {
             style={{ whiteSpace: "nowrap" }}
           >
             {cat.icon && <span>{cat.icon}</span>}
-            <span>{cat.label}</span>
+            <span>{cat.value === "all" ? "All Sectors" : (t[`cat_${cat.value}`] || cat.label)}</span>
           </button>
         ))}
       </div>

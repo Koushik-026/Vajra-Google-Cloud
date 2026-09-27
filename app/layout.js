@@ -1,4 +1,7 @@
 import "./globals.css";
+import { LanguageProvider } from "@/lib/LanguageContext";
+import Navbar from "./components/Navbar";
+import LanguageExtension from "./components/LanguageExtension";
 
 export const metadata = {
   title: "Vajra — Precision AI Digital Public Infrastructure",
@@ -34,74 +37,57 @@ export default function RootLayout({ children }) {
         ></script>
       </head>
       <body>
-        {/* Top Minimalist Navigation (from Stitch Visual Scaffolding) */}
-        <header className="stitch-navbar">
-          <div className="navbar-inner">
-            <div className="navbar-left">
-              <a href="/" className="brand-logo">
-                <span className="brand-name">Vajra</span>
-              </a>
-              <nav className="nav-menu">
-                <a href="/" className="nav-item">Citizen Portal</a>
-                <a href="/hotspots" className="nav-item">Hotspots Map</a>
-                <a href="/status" className="nav-item">Status Tracker</a>
-                <a href="/planner" className="nav-item">Municipal Planner</a>
-              </nav>
-            </div>
-            <div className="navbar-right">
-              <a href="/status" className="btn-stitch-secondary">
-                Track Report
-              </a>
-              <a href="/#report-form" className="btn-stitch-primary">
-                Submit Report
-              </a>
-            </div>
-          </div>
-        </header>
+        <LanguageProvider>
+          {/* Top Minimalist Navigation (from Stitch Visual Scaffolding) */}
+          <Navbar />
 
-        <main>{children}</main>
+          {/* Floating Slide-out Language Extension (Zero Layout Displacement) */}
+          <LanguageExtension />
 
-        {/* Minimalist Engineered Footer */}
-        <footer className="stitch-footer">
-          <div className="footer-inner">
-            <div className="footer-top">
-              <div className="footer-brand-col">
-                <div className="brand-name" style={{ fontSize: "1.25rem", marginBottom: "0.5rem" }}>
-                  Vajra
+          <main>{children}</main>
+
+          {/* Minimalist Engineered Footer */}
+          <footer className="stitch-footer">
+            <div className="footer-inner">
+              <div className="footer-top">
+                <div className="footer-brand-col">
+                  <div className="brand-name" style={{ fontSize: "1.25rem", marginBottom: "0.5rem" }}>
+                    Vajra
+                  </div>
+                  <p className="footer-lead">
+                    AI-Powered Digital Public Infrastructure for Municipal Governance & Capital Budgeting.
+                  </p>
+                  <div className="footer-badge">Digital Public Infrastructure Console</div>
                 </div>
-                <p className="footer-lead">
-                  AI-Powered Digital Public Infrastructure for Municipal Governance & Capital Budgeting.
-                </p>
-                <div className="footer-badge">Digital Public Infrastructure Console</div>
-              </div>
-              <div className="footer-links-grid">
-                <div className="footer-col">
-                  <div className="footer-heading">Architecture</div>
-                  <a href="/#ai-engine" className="footer-link">Gemini Embeddings</a>
-                  <a href="/hotspots" className="footer-link">Spatial Deduplication</a>
-                  <a href="/planner" className="footer-link">Greedy Knapsack</a>
-                </div>
-                <div className="footer-col">
-                  <div className="footer-heading">Public Portals</div>
-                  <a href="/" className="footer-link">Citizen Reporting</a>
-                  <a href="/hotspots" className="footer-link">Hotspots Map</a>
-                  <a href="/status" className="footer-link">Public Ledger</a>
-                  <a href="/planner" className="footer-link">Planner Dashboard</a>
-                </div>
-                <div className="footer-col">
-                  <div className="footer-heading">Channels</div>
-                  <a href="/api/whatsapp" className="footer-link">WhatsApp Webhook</a>
-                  <a href="https://ai.google.dev/" target="_blank" rel="noreferrer" className="footer-link">Google AI Studio</a>
-                  <a href="https://firebase.google.com/" target="_blank" rel="noreferrer" className="footer-link">Firebase Cloud</a>
+                <div className="footer-links-grid">
+                  <div className="footer-col">
+                    <div className="footer-heading">Architecture</div>
+                    <a href="/#ai-engine" className="footer-link">Gemini Embeddings</a>
+                    <a href="/hotspots" className="footer-link">Spatial Deduplication</a>
+                    <a href="/planner" className="footer-link">Greedy Knapsack</a>
+                  </div>
+                  <div className="footer-col">
+                    <div className="footer-heading">Public Portals</div>
+                    <a href="/" className="footer-link">Citizen Reporting</a>
+                    <a href="/hotspots" className="footer-link">Hotspots Map</a>
+                    <a href="/status" className="footer-link">Public Ledger</a>
+                    <a href="/planner" className="footer-link">Planner Dashboard</a>
+                  </div>
+                  <div className="footer-col">
+                    <div className="footer-heading">Channels</div>
+                    <a href="/api/whatsapp" className="footer-link">WhatsApp Webhook</a>
+                    <a href="https://ai.google.dev/" target="_blank" rel="noreferrer" className="footer-link">Google AI Studio</a>
+                    <a href="https://firebase.google.com/" target="_blank" rel="noreferrer" className="footer-link">Firebase Cloud</a>
+                  </div>
                 </div>
               </div>
+              <div className="footer-bottom">
+                <span>© 2026 Vajra. Built for Google Cloud "Build with AI: Code for Communities".</span>
+                <span>Zero GCP Billing Architecture • Free Tier Verified</span>
+              </div>
             </div>
-            <div className="footer-bottom">
-              <span>© 2026 Vajra. Built for Google Cloud "Build with AI: Code for Communities".</span>
-              <span>Zero GCP Billing Architecture • Free Tier Verified</span>
-            </div>
-          </div>
-        </footer>
+          </footer>
+        </LanguageProvider>
       </body>
     </html>
   );

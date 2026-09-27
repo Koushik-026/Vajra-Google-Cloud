@@ -676,3 +676,18 @@ a {
   flex-wrap: wrap;
   gap: 1rem;
 }
+
+/* =========================================================
+   MULTILINGUAL EXTENSION DRAWER (NON-INTRUSIVE SIDE TAB)
+   ========================================================= */
+
+.vajra-language-extension-container {
+  user-select: none;
+}
+
+@media (max-width: 768px) {
+  .vajra-language-extension-container {
+    top: 80px !important;
+  }
+}
+
