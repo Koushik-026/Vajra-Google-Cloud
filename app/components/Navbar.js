@@ -1,41 +1,12 @@
 "use client";
-
-import { useLanguage } from "@/lib/LanguageContext";
-
-export default function Navbar() {
-  const { t } = useLanguage();
-
-  return (
-    <header className="stitch-navbar">
-      <div className="navbar-inner">
-        <div className="navbar-left">
-          <a href="/" className="brand-logo">
-            <span className="brand-name">{t.brandName || "Vajra"}</span>
-          </a>
-          <nav className="nav-menu">
-            <a href="/" className="nav-item">
-              {t.citizenPortal}
-            </a>
-            <a href="/hotspots" className="nav-item">
-              {t.hotspotsMap}
-            </a>
-            <a href="/status" className="nav-item">
-              {t.statusTracker}
-            </a>
-            <a href="/planner" className="nav-item">
-              {t.municipalPlanner}
-            </a>
-          </nav>
-        </div>
-        <div className="navbar-right">
-          <a href="/status" className="btn-stitch-secondary">
-            {t.trackReport}
-          </a>
-          <a href="/#report-form" className="btn-stitch-primary">
-            {t.submitReport}
-          </a>
-        </div>
-      </div>
-    </header>
-  );
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useLanguage } from '@/lib/LanguageContext';
+export default function Navbar(){
+ const path=usePathname();const {language,setLanguage}=useLanguage();
+ return <header className="nav-shell"><a className="skip-link" href="#main">Skip to content</a><div className="nav-inner">
+ <Link className="brand" href="/" aria-label="Vajra home"><span className="brand-mark">v<span>✦</span></span>vajra<span className="brand-dot">.</span></Link>
+ <nav aria-label="Main navigation"><Link className={path==='/'?'active':''} href="/">For citizens</Link><Link className={path==='/planner'?'active':''} href="/planner">For planners</Link><Link className={path==='/status'?'active':''} href="/status">Track a report</Link></nav>
+ <div className="nav-actions"><select aria-label="Interface language" value={language} onChange={e=>setLanguage(e.target.value)}><option value="en">EN · English</option><option value="te">తెలుగు</option><option value="hi">हिन्दी</option></select><Link href="/#report-form" className="button small">Speak up <span>↗</span></Link></div>
+ </div></header>;
 }

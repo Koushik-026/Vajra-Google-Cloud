@@ -1,0 +1,8 @@
+.env*
+service-account.json
+.npm-cache/
+.git/
+.next/
+node_modules/
+scripts/
+test/

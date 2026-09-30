@@ -1,7 +1,6 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {
-  // firebase-admin and its gRPC dependencies must not be bundled into API routes
-  serverExternalPackages: ["firebase-admin"],
+const nextConfig={
+ serverExternalPackages:['firebase-admin'],
+ async headers(){return [{source:'/(.*)',headers:[{key:'X-Content-Type-Options',value:'nosniff'},{key:'X-Frame-Options',value:'DENY'},{key:'Referrer-Policy',value:'no-referrer'},{key:'Permissions-Policy',value:'camera=(), microphone=(self), geolocation=(self)'}]}];}
 };
-
 export default nextConfig;

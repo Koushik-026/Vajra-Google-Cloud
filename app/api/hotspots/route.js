@@ -1,27 +1,11 @@
-// GET /api/hotspots — list all hotspots for the planner dashboard
-import { adminDb } from "@/lib/firebaseAdmin";
-import { NextResponse } from "next/server";
-
-export async function GET() {
-  try {
-    const snapshot = await adminDb
-      .collection("hotspots")
-      .orderBy("priority_score", "desc")
-      .get();
-
-    const hotspots = snapshot.docs.map((doc) => {
-      const data = doc.data();
-      // Don't send embeddings to the frontend (too large)
-      const { embedding, ...rest } = data;
-      return { id: doc.id, ...rest };
-    });
-
-    return NextResponse.json({ hotspots });
-  } catch (error) {
-    console.error("Error fetching hotspots:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch hotspots", details: error.message },
-      { status: 500 }
-    );
-  }
+import { NextResponse } from 'next/server';
+import { adminDb } from '@/lib/firebaseAdmin';
+import { requirePlanner, apiError } from '@/lib/security';
+export async function GET(request){
+  const denied=requirePlanner(request);if(denied)return denied;
+  try{
+    const snap=await adminDb.collection('hotspots').orderBy('priority_score','desc').limit(201).get();
+    const hotspots=snap.docs.map(d=>{const h=d.data();return {id:d.id,category:h.category,lat:h.lat,lng:h.lng,corroboration_count:h.corroboration_count,priority_score:h.priority_score,funding_status:h.funding_status,sample_budget_used:h.sample_budget_used,created_at:h.created_at};});
+    return NextResponse.json({hotspots},{headers:{'Cache-Control':'no-store'}});
+  }catch(e){return apiError(e);}
 }

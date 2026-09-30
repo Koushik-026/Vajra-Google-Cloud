@@ -1,196 +1,87 @@
-// GET & POST /api/whatsapp — WhatsApp Cloud API Webhook Integration
-import { adminDb } from "@/lib/firebaseAdmin";
-import { NextResponse } from "next/server";
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
-const CATEGORIES = [
-  "roads",
-  "water_supply",
-  "sanitation",
-  "streetlights",
-  "drainage",
-  "health_facility",
-  "public_transport",
-  "solid_waste",
-  "other",
-];
-
-// Use Gemini to categorize unstructured citizen WhatsApp complaints
-async function classifyComplaintWithGemini(text) {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) return "other";
-
-  try {
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash" });
-
-    const prompt = `Classify this citizen infrastructure complaint into exactly ONE category from this list:
-[roads, water_supply, sanitation, streetlights, drainage, health_facility, public_transport, solid_waste, other]
-
-Complaint: "${text}"
-
-Respond with ONLY the exact category name in lowercase (no punctuation, no markdown).`;
-
-    const res = await model.generateContent(prompt);
-    const cat = res.response.text().trim().toLowerCase();
-    return CATEGORIES.includes(cat) ? cat : "other";
-  } catch (err) {
-    console.error("Gemini complaint categorization error:", err);
-    return "other";
-  }
+import { createHmac } from 'node:crypto';
+import { NextResponse } from 'next/server';
+import { adminDb } from '@/lib/firebaseAdmin';
+import { analyze } from '@/lib/ai';
+import { finishReport } from '@/lib/processing';
+import { validateReport } from '@/lib/planning.mjs';
+import { equal, readRaw, apiError, rateLimit } from '@/lib/security';
+export const maxDuration=60;
+const graph=()=> 'https://graph.facebook.com/'+(process.env.WHATSAPP_API_VERSION || 'v23.0');
+async function reply(to,text){
+  if(!process.env.WHATSAPP_ACCESS_TOKEN || !process.env.WHATSAPP_PHONE_NUMBER_ID)return;
+  const r=await fetch(graph()+'/'+process.env.WHATSAPP_PHONE_NUMBER_ID+'/messages',{method:'POST',headers:{Authorization:'Bearer '+process.env.WHATSAPP_ACCESS_TOKEN,'Content-Type':'application/json'},body:JSON.stringify({messaging_product:'whatsapp',to,type:'text',text:{body:text}}),signal:AbortSignal.timeout(10000)});
+  if(!r.ok)console.error('WhatsApp reply failed:',r.status);
 }
-
-// Send automated WhatsApp reply back to citizen
-async function sendWhatsAppMessage(recipientPhone, messageText) {
-  const token = process.env.WHATSAPP_ACCESS_TOKEN;
-  const phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID;
-
-  if (!token || !phoneId) {
-    console.log(
-      `[WhatsApp Cloud API Mock] Would send to ${recipientPhone}: ${messageText}`
-    );
-    return false;
-  }
-
-  try {
-    const url = `https://graph.facebook.com/v19.0/${phoneId}/messages`;
-    const res = await fetch(url, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        messaging_product: "whatsapp",
-        recipient_type: "individual",
-        to: recipientPhone,
-        type: "text",
-        text: { body: messageText },
-      }),
-    });
-    return res.ok;
-  } catch (err) {
-    console.error("Failed to send WhatsApp message:", err);
-    return false;
-  }
+async function media(id){
+  if(!/^\d+$/.test(id || ''))throw new Error('Invalid media ID');
+  const headers={Authorization:'Bearer '+process.env.WHATSAPP_ACCESS_TOKEN};
+  const meta=await fetch(graph()+'/'+id,{headers,signal:AbortSignal.timeout(10000)});
+  if(!meta.ok)throw new Error('Media lookup failed');
+  const m=await meta.json(),url=new URL(m.url);
+  if(url.protocol!=='https:' || !['facebook.com','fbcdn.net','whatsapp.net'].some(h=>url.hostname===h || url.hostname.endsWith('.'+h)))throw new Error('Invalid media origin');
+  if(m.file_size>2000000)throw new Error('Media too large');
+  const response=await fetch(url,{headers,redirect:'error',signal:AbortSignal.timeout(10000)});
+  if(!response.ok)throw new Error('Media download failed');
+  return {data:(await readRaw(response,2000000)).toString('base64'),mime:m.mime_type.split(';')[0]};
 }
-
-// GET /api/whatsapp — Webhook verification for Meta
-export async function GET(request) {
-  const { searchParams } = new URL(request.url);
-  const mode = searchParams.get("hub.mode");
-  const token = searchParams.get("hub.verify_token");
-  const challenge = searchParams.get("hub.challenge");
-
-  const expectedToken =
-    process.env.WHATSAPP_VERIFY_TOKEN || "vajra_whatsapp_secret_2026";
-
-  if (mode === "subscribe" && token === expectedToken) {
-    console.log("WhatsApp webhook verified successfully!");
-    return new Response(challenge, { status: 200 });
-  }
-
-  return new Response("Forbidden", { status: 403 });
+export async function GET(request){
+  const q=new URL(request.url).searchParams;
+  if(process.env.WHATSAPP_VERIFY_TOKEN && q.get('hub.mode')==='subscribe' && equal(q.get('hub.verify_token'),process.env.WHATSAPP_VERIFY_TOKEN))return new Response(q.get('hub.challenge'),{status:200});
+  return new Response('Forbidden',{status:403});
 }
-
-// POST /api/whatsapp — Process incoming WhatsApp messages
-export async function POST(request) {
-  try {
-    const body = await request.json();
-
-    // 1. Check for Meta WhatsApp Cloud API webhook structure
-    const entry = body?.entry?.[0];
-    const change = entry?.changes?.[0];
-    const value = change?.value;
-    const message = value?.messages?.[0];
-
-    // 2. Allow simulated / direct payload for hackathon testing: { phone, text, lat, lng }
-    let senderPhone = "";
-    let messageText = "";
-    let lat = 12.9716; // Default demo coordinates (Bengaluru tech / municipal center)
-    let lng = 77.5946;
-
-    if (message) {
-      senderPhone = message.from;
-      if (message.type === "text") {
-        messageText = message.text?.body || "";
-      } else if (message.type === "location") {
-        lat = message.location?.latitude || lat;
-        lng = message.location?.longitude || lng;
-        messageText = message.location?.name || "Reported location from WhatsApp";
-      } else {
-        messageText = `Media message received (${message.type})`;
+export async function POST(request){
+  try{
+    if(!process.env.WHATSAPP_APP_SECRET)return new Response('Webhook not configured',{status:503});
+    const raw=await readRaw(request,256000);
+    const expected='sha256='+createHmac('sha256',process.env.WHATSAPP_APP_SECRET).update(raw).digest('hex');
+    if(!equal(request.headers.get('x-hub-signature-256'),expected))return new Response('Forbidden',{status:403});
+    let body;try{body=JSON.parse(raw.toString());}catch{return new Response('Invalid JSON',{status:400});}
+    for(const entry of body.entry || [])for(const change of entry.changes || []){
+      const value=change.value;
+      if(value?.metadata?.phone_number_id!==process.env.WHATSAPP_PHONE_NUMBER_ID)continue;
+      for(const message of value.messages || []){
+        if(!message.id || !message.from)continue;
+        const hash=x=>createHmac('sha256',process.env.WHATSAPP_APP_SECRET).update(x).digest('hex');
+        const eventRef=adminDb.collection('_whatsapp_events').doc(hash(message.id));
+        if((await eventRef.get()).exists)continue;
+        await rateLimit(request,'whatsapp_sender',8,hash(message.from));
+        if(message.type!=='location') await rateLimit(request,'daily_ai',100,'all',86400000);
+        const sessionRef=adminDb.collection('_whatsapp_sessions').doc(hash(message.from));
+        const analysisInput={};
+        if(message.type==='text')analysisInput.text=String(message.text?.body || '').slice(0,3000);
+        else if(message.type==='audio' || message.type==='image'){
+          const file=await media(message[message.type]?.id);
+          if(message.type==='audio'){analysisInput.audio=file.data;analysisInput.audioMimeType=file.mime;}
+          else {analysisInput.photo=file.data;analysisInput.photoMimeType=file.mime;analysisInput.text=String(message.image?.caption || 'Infrastructure issue shown in the attached photo.').slice(0,3000);}
+        }else if(message.type!=='location'){await reply(message.from,'Please send text, a voice note, or a photo with a caption, followed by your location.');continue;}
+        const analysis=message.type==='location'?null:await analyze(analysisInput);
+        const reportRef=adminDb.collection('reports').doc();
+        const result=await adminDb.runTransaction(async tx=>{
+          const event=await tx.get(eventRef),session=await tx.get(sessionRef),budget=await tx.get(adminDb.collection('budget_pool').doc('current'));
+          if(event.exists)return null;
+          const previous=session.data();
+          const staged=previous?.expires_at>Date.now()?previous.report:null;
+          if(message.type==='location' && staged){
+            let input;try{input=validateReport({...staged,lat:message.location?.latitude,lng:message.location?.longitude});}catch{return {invalid:true};}
+            const count=budget.data()?.report_count ?? (await tx.get(adminDb.collection('reports').limit(201))).size;
+            if(count>=200) return {full:true};
+            tx.set(reportRef,{...input,id:reportRef.id,translated_text:staged.translated_text,language:staged.language,photo_verification:staged.photo_verification,photo_url:null,source:'whatsapp',status:'received',hotspot_id:null,created_at:new Date().toISOString(),processing_state:'pending'});
+            tx.set(adminDb.collection('budget_pool').doc('current'),{report_count:count+1,revision:(budget.data()?.revision || 0)+1},{merge:true});
+            tx.delete(sessionRef);
+            tx.set(eventRef,{created_at:new Date().toISOString(),report_id:reportRef.id});
+            return {id:reportRef.id};
+          }
+          if(analysis)tx.set(sessionRef,{report:analysis,expires_at:Date.now()+3600000});
+          tx.set(eventRef,{created_at:new Date().toISOString()});
+          return {staged:!!analysis};
+        });
+        if(result?.id){
+          await finishReport(result.id);
+          const base=process.env.APP_URL;
+          await reply(message.from,'Your report has been received. Tracking ID: '+result.id+(base?'\nTrack it: '+base+'/status?id='+result.id:'')+'\nBudget status is a planning scenario, not a government funding approval.');
+        }else if(result)await reply(message.from,result.full?'This pilot is at capacity. Please use your local official grievance channel.':result.staged?'Your report is ready. Share the issue location using WhatsApp’s attachment → Location. Send location last.':'Please send a description, voice note, or captioned photo first, then share a location in India.');
       }
-    } else if (body.phone && body.text) {
-      senderPhone = body.phone;
-      messageText = body.text;
-      if (body.lat != null) lat = body.lat;
-      if (body.lng != null) lng = body.lng;
-    } else {
-      // Acknowledgment for other Meta event pings (e.g. status updates)
-      return NextResponse.json({ status: "ignored" });
     }
-
-    if (!messageText.trim()) {
-      return NextResponse.json({ status: "empty_message" });
-    }
-
-    // AI Classification
-    const category = await classifyComplaintWithGemini(messageText);
-
-    // Create report document
-    const reportRef = adminDb.collection("reports").doc();
-    const reportData = {
-      id: reportRef.id,
-      text: messageText.trim(),
-      category,
-      lat,
-      lng,
-      status: "received",
-      source: "whatsapp",
-      sender_phone: senderPhone,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      photo_verification: null,
-    };
-
-    await reportRef.set(reportData);
-
-    // Trigger async processing pipeline (embeddings + clustering)
-    const host = request.headers.get("host") || "localhost:3000";
-    const proto = request.headers.get("x-forwarded-proto") || "http";
-    const baseUrl = `${proto}://${host}`;
-
-    fetch(`${baseUrl}/api/process`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ report_id: reportRef.id }),
-    }).catch((err) => console.error("Async process trigger error:", err));
-
-    // Send confirmation reply back to citizen
-    const replyText = `🙏 Namaste! Your infrastructure report has been received and verified by Vajra AI.
-
-📌 Category: ${category.replace(/_/g, " ").toUpperCase()}
-📋 Tracking ID: ${reportRef.id}
-
-You can track your neighborhood cluster & funding status here:
-${baseUrl}/status?id=${reportRef.id}
-
-Thank you for helping build better digital public infrastructure! ⚡`;
-
-    await sendWhatsAppMessage(senderPhone, replyText);
-
-    return NextResponse.json({
-      success: true,
-      report_id: reportRef.id,
-      category,
-      message: "WhatsApp report processed and reply dispatched",
-    });
-  } catch (err) {
-    console.error("WhatsApp webhook error:", err);
-    return NextResponse.json(
-      { error: "Webhook processing error", details: err.message },
-      { status: 500 }
-    );
-  }
+    return NextResponse.json({received:true});
+  }catch(e){return apiError(e);}
 }
